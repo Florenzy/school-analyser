@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Academic Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 1rem;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #444;
+    }
+    th {
+      background-color: #222;
+    }
+    tr:hover {
+      background-color: #333;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 0.5rem;
+      background: #222;
+      color: white;
+      border: 1px solid #555;
+    }
+    .add-btn {
+      margin-top: 1rem;
+      background: #28a745;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      cursor: pointer;
+    }
+    .add-btn:hover {
+      background: #218838;
+    }
+    .delete-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 Мои долги по предметам</h1>
+  <table id="taskTable">
+    <thead>
+      <tr>
+        <th>Предмет</th>
+        <th>Задача</th>
+        <th>Статус</th>
+        <th>Удалить</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>➕ Добавить</h2>
+  <select id="subjectInput">
+    <option value="">-- Выбери предмет --</option>
+    <option>ХИМИЯ</option>
+    <option>ГЕОГРАФИЯ</option>
+    <option>МАТЕМАТИКА</option>
+    <option>ЭКОНОМИКА</option>
+    <option>ФИЗ.РА</option>
+    <option>УКРАИНСКИЙ ЯЗЫК</option>
+    <option>ПРАВО</option>
+    <option>ИСТОРИЯ УКРАИНЫ</option>
+    <option>ИСТОРИЯ ВСЕСВИТНЯ</option>
+    <option>УКРАИНСКАЯ ЛИТЕРАТУРА</option>
+    <option>ЗАРУБЕЖНАЯ ЛИТЕРАТУРА</option>
+    <option>ФИЗИКА</option>
+    <option>БИОЛОГИЯ</option>
+    <option>АНГЛИЙСКИЙ</option>
+    <option>ЗАХИСТ УКРАИНЫ</option>
+    <option>ИНФОРМАТИКА</option>
+  </select>
+  <input type="text" id="taskInput" placeholder="Что нужно сдать / сделать">
+  <select id="statusInput">
+    <option value="❗">❗ Долг</option>
+    <option value="🕒">🕒 В процессе</option>
+    <option value="✅">✅ Готово</option>
+  </select>
+  <button class="add-btn" onclick="addTask()">Добавить</button>
+
+  <script>
+    const tableBody = document.querySelector("#taskTable tbody");
+
+    function saveToLocalStorage() {
+      const tasks = [];
+      for (let row of tableBody.rows) {
+        const subject = row.cells[0].textContent;
+        const task = row.cells[1].textContent;
+        const status = row.cells[2].textContent;
+        tasks.push({ subject, task, status });
+      }
+      localStorage.setItem("taskList", JSON.stringify(tasks));
+    }
+
+    function loadFromLocalStorage() {
+      const data = localStorage.getItem("taskList");
+      if (data) {
+        const tasks = JSON.parse(data);
+        tasks.forEach(taskObj => addRow(taskObj.subject, taskObj.task, taskObj.status));
+      }
+    }
+
+    function addRow(subject, task, status) {
+      const row = tableBody.insertRow();
+      row.insertCell(0).textContent = subject;
+      row.insertCell(1).textContent = task;
+      row.insertCell(2).textContent = status;
+      const deleteCell = row.insertCell(3);
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "✖";
+      delBtn.className = "delete-btn";
+      delBtn.onclick = function () {
+        tableBody.removeChild(row);
+        saveToLocalStorage();
+      };
+      deleteCell.appendChild(delBtn);
+    }
+
+    function addTask() {
+      const subject = document.getElementById("subjectInput").value;
+      const task = document.getElementById("taskInput").value.trim();
+      const status = document.getElementById("statusInput").value;
+
+      if (!subject || !task) return;
+
+      addRow(subject, task, status);
+
+      document.getElementById("subjectInput").value = "";
+      document.getElementById("taskInput").value = "";
+      document.getElementById("statusInput").value = "❗";
+
+      saveToLocalStorage();
+    }
+
+    window.onload = loadFromLocalStorage;
+  </script>
+</body>
+</html>
