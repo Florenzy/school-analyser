@@ -38,15 +38,16 @@
       color: white;
       border: 1px solid #555;
     }
-    .add-btn {
+    .add-btn, .export-btn, .import-btn {
       margin-top: 1rem;
       background: #28a745;
       color: white;
       padding: 0.5rem 1rem;
       border: none;
       cursor: pointer;
+      margin-right: 0.5rem;
     }
-    .add-btn:hover {
+    .add-btn:hover, .export-btn:hover, .import-btn:hover {
       background: #218838;
     }
     .delete-btn {
@@ -98,10 +99,12 @@
   <input type="text" id="taskInput" placeholder="Что нужно сдать / сделать">
   <select id="statusInput">
     <option value="❗">❗ Долг</option>
-    <option value="🕒">🕒 В процессе</option>
-    <option value="✅">✅ Готово</option>
+    <option value="📘">📘 Д/з</option>
   </select>
   <button class="add-btn" onclick="addTask()">Добавить</button>
+  <button class="export-btn" onclick="exportTasks()">📤 Скачать</button>
+  <button class="import-btn" onclick="document.getElementById('importFile').click()">📥 Загрузить</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importTasks(event)">
 
   <script>
     const tableBody = document.querySelector("#taskTable tbody");
@@ -155,6 +158,31 @@
       document.getElementById("statusInput").value = "❗";
 
       saveToLocalStorage();
+    }
+
+    function exportTasks() {
+      const data = localStorage.getItem("taskList");
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "taskList.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importTasks(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const content = e.target.result;
+        const tasks = JSON.parse(content);
+        tableBody.innerHTML = "";
+        tasks.forEach(task => addRow(task.subject, task.task, task.status));
+        localStorage.setItem("taskList", JSON.stringify(tasks));
+      };
+      reader.readAsText(file);
     }
 
     window.onload = loadFromLocalStorage;
